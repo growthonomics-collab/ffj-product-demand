@@ -50,7 +50,7 @@ a{color:inherit}
 .sitehead .wrap{display:flex;align-items:center;gap:28px;min-height:64px;flex-wrap:wrap}
 .wordmark{font-family:var(--sans);font-weight:500;font-size:22px;letter-spacing:.32em;text-transform:uppercase;text-decoration:none;padding-right:8px;white-space:nowrap}
 nav.tabs{display:flex;gap:2px;flex-wrap:wrap;margin:0;flex:1}
-nav.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:22px 11px 20px;font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);cursor:pointer;margin-bottom:-1px;white-space:nowrap}
+nav.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:22px 9px 20px;font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);cursor:pointer;margin-bottom:-1px;white-space:nowrap}
 nav.tabs button:hover{color:var(--taupe)}
 nav.tabs button[aria-selected="true"]{border-bottom-color:var(--ink)}
 .headcta{font-family:var(--sans);font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:var(--taupe);color:#fff;padding:9px 16px;text-decoration:none;white-space:nowrap}
@@ -185,6 +185,7 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .trend-Rising{color:#5fd08a}:root:not([data-theme="light"]) .trend-Fading{color:#f08a7a}}
 .tier-Low{background:var(--bg);color:var(--ink-3);border:1px dashed var(--line-strong)}
 .pl{font-size:12px;color:var(--ink-2);line-height:1.5}
+.vch{font-size:11.5px;color:var(--ink-2);margin-top:4px}.vch b{color:var(--ink);font-weight:500}
 .pl b{color:var(--ink);font-weight:500}
 .pager{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:14px;font-size:13px}
 .pager button{font:inherit;font-size:12px;padding:6px 11px;border:1px solid var(--line-strong);border-radius:0;background:var(--surface);color:var(--ink);cursor:pointer}
@@ -250,10 +251,11 @@ body.locked > :not(#lock){visibility:hidden}
   <a class="wordmark" href="#top">Flawless</a>
   <nav class="tabs" role="tablist" aria-label="Views">
     <button role="tab" id="tab-rank" aria-selected="true" aria-controls="p-rank">Rankings</button>
-    <button role="tab" id="tab-all" aria-selected="false" aria-controls="p-all">Every product</button>
-    <button role="tab" id="tab-map" aria-selected="false" aria-controls="p-map">Placement map</button>
-    <button role="tab" id="tab-hubs" aria-selected="false" aria-controls="p-hubs">Category hubs</button>
+    <button role="tab" id="tab-all" aria-selected="false" aria-controls="p-all">Products</button>
+    <button role="tab" id="tab-map" aria-selected="false" aria-controls="p-map">Placement</button>
+    <button role="tab" id="tab-hubs" aria-selected="false" aria-controls="p-hubs">Hubs</button>
     <button role="tab" id="tab-attr" aria-selected="false" aria-controls="p-attr">Attributes</button>
+    <button role="tab" id="tab-var" aria-selected="false" aria-controls="p-var">Variations</button>
     <button role="tab" id="tab-method" aria-selected="false" aria-controls="p-method">Formula</button>
   </nav>
   <a class="headcta" href="#p-method" id="headcta">The method</a>
@@ -398,6 +400,20 @@ body.locked > :not(#lock){visibility:hidden}
   <div class="attrgrid" id="attrgrid"></div>
 </section>
 
+<section role="tabpanel" id="p-var" aria-labelledby="tab-var" hidden>
+  <div class="panel-head">
+    <div>
+      <h2>Variations: what shoppers pick on the product page</h2>
+      <p>Most settings are sold in several diamond shapes, claw styles, band types and metal purities, chosen on the product page. Each choice changes the page address (for example <code>?shape=oval&amp;attribute_pa_claws=round</code>), so GA4 records it. This tab reads those addresses: <span id="varsum"></span></p>
+    </div>
+    <div class="controls">
+      <label class="ctl">Family<select id="varfam"></select></label>
+    </div>
+  </div>
+  <div class="attrgrid" id="vargrid"></div>
+  <p class="callout small" style="margin-top:18px"><b>How this feeds the ranking.</b> On a shape page such as /engagement-rings/oval/, each setting is now scored on its <i>oval</i> views, users and engaged sessions (its share of that shape among all shapes chosen on its page), not on the whole product. A setting that shoppers open for pear stones no longer ranks high on the oval page. Products without any shape data keep their whole-product numbers. Claws, band type and purity are shown here for merchandising and are not part of the score.</p>
+</section>
+
 <section role="tabpanel" id="p-method" aria-labelledby="tab-method" hidden>
   <div class="method">
     <h2 style="margin-top:0">The formula</h2>
@@ -425,6 +441,8 @@ body.locked > :not(#lock){visibility:hidden}
     <h3>Engagement rate on its own</h3>
     <p>The tables also show each product's engagement rate. Site-wide, product pages run at about <span id="er-site"></span> engaged sessions, against <span id="er-all"></span> for the site as a whole. Read it as a quality check next to the ratio: a Hero product with an engagement rate well under the hub average is being clicked on but not liked (price, imagery or a mismatch with the listing it came from), and a Low product with a very high engagement rate is a candidate for better placement.</p>
 
+    <h2>Variations from the product page</h2>
+    <p>GA4's standard "Page path" drops everything after the question mark, so the first versions of this score treated a setting as one product however it was opened. The site writes the shopper's choices into the address (?shape=oval, attribute_pa_claws=round, attribute_pa_band-type=pave, attribute_pa_center-stone=lab, attribute_pa_metal-purity=9k), so a "Page path + query string" export recovers them: 604,680 of the period's product views carry a choice, on 2,992 products. Two uses follow. Shape pages are scored on shape-specific views (see the Variations tab), and every product shows the split of shapes, claws and bands its shoppers picked, which is the brief for imagery and for which variant to feature first.</p>
     <h2>Four upgrades over the first version</h2>
     <p><b>Hub membership from the site, not from names.</b> Each of the 365 category pages was crawled for the products it actually lists. A product is ranked inside the pages that show it, and the "Not listed anywhere" filter exposes products with traffic that no hub page carries. The URL-word method remains only for builder and landing pages that have no fixed list.</p>
     <p><b>Recency.</b> Views and users are weighted with a 30-day half-life, so a product rising this month shows now rather than at the next quarter. The 12-month column still shows the long-run position.</p>
@@ -486,7 +504,7 @@ body.locked > :not(#lock){visibility:hidden}
 <div class="tt" id="tt"></div>
 
 <script id="data" type="application/json"></script>
-<script id="enc" type="application/octet-stream" data-salt="bcQkcO557jg26nWN/yL9Tw==" data-iv="oqHX8KQjimYS6Bvr" data-iter="200000"></script>
+<script id="enc" type="application/octet-stream" data-salt="A9nBGyDdXuVS+Flqy4+OQg==" data-iv="lUCnNKxjM8h028j8" data-iter="200000"></script>
 <script src="data1.js"></script><script src="data2.js"></script><script src="data3.js"></script>
 <script>
 async function boot(){
@@ -503,6 +521,7 @@ PL.forEach(o => { if (o.ratio12 === undefined) { o.ratio12 = 0; o.trend = ''; } 
 const ROOTS = new Set(['pg-engagement-rings','pg-wedding-rings','pg-eternity-rings','pg-earrings','pg-necklaces','pg-bracelets']);
 const trendPill = tr => tr ? `<span class="trend trend-${tr}">${tr === 'Rising' ? '↑ ' : tr === 'Fading' ? '↓ ' : tr === 'New' ? '✦ ' : '→ '}${tr}</span>` : '';
 const tierOf = x => x >= 3 ? 'Hero' : x >= 1.5 ? 'Strong' : x >= 0.5 ? 'Average' : 'Low';
+function vchips(o){ const v = o.variants && o.variants.shape; if (!v || !v.length) return ''; const tot = v.reduce((a,x)=>a+x[1],0) || 1; return '<div class="vch">Shapes: ' + v.slice(0,4).map(x => `<span>${esc(x[0])} <b>${(x[1]/tot*100).toFixed(0)}%</b></span>`).join(' · ') + (v.length > 4 ? ` · +${v.length-4}` : '') + '</div>'; }
 function plist(o, skip){ const xs = (o.placements || []).filter(x => x[0] !== skip && !ROOTS.has(x[0])); if (!xs.length) return '<span class="muted">main hub only</span>'; const show = xs.slice(0, 8).map(x => `${esc(HUB[x[0]].label)} <b>${x[1] ? '#' + x[1] : 'no data'}</b> of ${HUB[x[0]].n_products}`).join('<br>'); return show + (xs.length > 8 ? `<details class="more"><summary>+${xs.length - 8} more pages</summary>${xs.slice(8).map(x => `${esc(HUB[x[0]].label)} <b>${x[1] ? '#' + x[1] : 'no data'}</b> of ${HUB[x[0]].n_products}`).join('<br>')}</details>` : ''); }
 const tierPill = t => `<span class="tier tier-${t.replace(' ','-')}">${t}</span>`;
 const TH = D.thumbs || {}; const IMG = D.images || {};
@@ -576,7 +595,8 @@ function renderHub(){
   const rows = h.all.slice(0, n).map(([pid, rank, score, score12, prov]) => { const o = P[pid]; if (!o) return null; const ratio = +(score * nl / 100).toFixed(2), ratio12 = +((score12 || 0) * nl / 100).toFixed(2); return Object.assign({}, o, {score, rank, ratio, ratio12, prov: !!prov, trend: prov ? 'New' : trendOf(ratio, ratio12), nodata: rank === 0}); }).filter(Boolean);
   const note = h.kind === 'unmapped' ? 'This page is a location or stock-status page (city, ready-to-ship, best sellers), so its products cannot be derived from the URL. Traffic is shown; ranking would need the page\'s own product list.' : h.kind === 'empty' ? 'No product in the catalogue carries every attribute in this URL, so this page has nothing to rank. Either the products are not named for it or the page should be reviewed.' : '';
   $('#hubnote').textContent = note; $('#hubnote').hidden = !note;
-  $('#hubsrc').textContent = h.src === 'site' ? `Members: the ${fmt(h.n_products)} products this page actually lists on the site (crawled ${'14 September 2026'}).` : h.src === 'derived' ? 'Members: derived from the words in the URL (this page is a builder or landing page without a fixed product list).' : '';
+  const shapeNote = h.shape ? ` Scored on ${h.shape} views: ${fmt(h.var_used)} of ${fmt(h.n_products)} products have shape-level data from the product page.` : '';
+  $('#hubsrc').textContent = (h.src === 'site' ? `Members: the ${fmt(h.n_products)} products this page actually lists on the site (crawled ${'14 September 2026'}).` : h.src === 'derived' ? 'Members: derived from the words in the URL (this page is a builder or landing page without a fixed product list).' : '') + shapeNote;
   const t = h.tot;
   $('#hubtiles').innerHTML = [
     ['Products in hub', t.products = h.n_products, ''],
@@ -611,7 +631,7 @@ function renderHub(){
     <div class="cratio">Ratio <b>${r.ratio.toFixed(2)}</b>${r.trend && r.trend !== 'Steady' ? ' · ' + r.trend : ''}</div></a>`; }).join('');
   // Table
   $('#ranktable').innerHTML = `<thead><tr><th>#</th><th>Product</th><th class="n">Demand share</th><th class="n">Ratio</th><th>Tier</th><th class="n">12-mo ratio</th><th>Trend</th><th class="n">Views</th><th class="n">Users</th><th class="n">Eng. rate</th><th class="n">Engaged sessions</th><th class="n">Organic clicks</th><th class="n">Add-to-cart</th><th class="n">Purchased</th></tr></thead><tbody>` +
-    rows.map((r, i) => `<tr><td class="num">${r.nodata ? '' : r.rank}</td><td><div class="pcell">${thumb(r)}<div><a class="name" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a><div class="chips">${chips(r)}</div><div class="pl">${plist(r, h.id)}</div></div></div></td>
+    rows.map((r, i) => `<tr><td class="num">${r.nodata ? '' : r.rank}</td><td><div class="pcell">${thumb(r)}<div><a class="name" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a><div class="chips">${chips(r)}</div>${vchips(r)}<div class="pl">${plist(r, h.id)}</div></div></div></td>
       <td class="n num"><span class="sharebar" style="width:${Math.max(2, 60 * r.score / (rows[0].score || 1))}px"></span><span class="share">${pct(r.score)}%</span></td>
       <td class="n num">${r.nodata ? '' : r.ratio.toFixed(2)}</td><td>${tierPill(r.nodata ? 'No data' : r.prov ? 'New' : tierOf(r.ratio))}${r.days_live ? `<div class="small muted">${r.days_live} days live</div>` : ''}</td>
       <td class="n num">${r.nodata ? '' : r.ratio12.toFixed(2)}</td><td>${trendPill(r.trend)}</td>
@@ -691,6 +711,22 @@ Object.keys(attrLabels).forEach(k => {
     tip: r => `<b>${esc(r.label)}</b>${fmt(r.views)} views across ${fmt(r.n)} products<br>${fmt(r.users)} users · ${fmt(r.clicks)} organic clicks · ${fmt(r.atc)} add-to-cart` });
 });
 
+
+// Variations panel (query-string data)
+const VD = D.vardemand || {}; const varLabels = {shape:'Diamond shape', claws:'Claw style', band:'Band type', stone:'Centre stone', carat:'Carat weight', purity:'Metal purity', width:'Band width'};
+const vf = $('#varfam'); Object.keys(VD).sort().forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; vf.appendChild(o); });
+if ([...vf.options].some(o => o.value === 'Engagement rings')) vf.value = 'Engagement rings';
+$('#varsum').textContent = `${fmt(D.var_views || 0)} product page views over the period carried a variation choice, on ${fmt(D.var_products || 0)} products.`;
+function renderVar(){
+  const fam = VD[vf.value] || {};
+  const keys = Object.keys(varLabels).filter(k => fam[k] && fam[k].length);
+  $('#vargrid').innerHTML = keys.map(k => `<figure><figcaption><h3>${varLabels[k]}</h3><span>share of views · ${vf.value}</span></figcaption><div id="var-${k}"></div></figure>`).join('') || '<p class="muted">No variation data for this family.</p>';
+  keys.forEach(k => { const rows = fam[k].slice(0, 12); const tot = rows.reduce((a,r)=>a+r.views,0) || 1;
+    hbar($('#var-'+k), rows, { aria: varLabels[k] + ' share of views', labelW: 150, label: r => r.label, value: r => r.views, valueText: r => (r.views/tot*100).toFixed(0) + '%',
+      tip: r => `<b>${esc(r.label)}</b>${fmt(r.views)} views · ${fmt(r.users)} users · ${fmt(r.engs)} engaged sessions<br>chosen on ${fmt(r.n)} products` }); });
+}
+vf.addEventListener('change', renderVar); renderVar();
+
 // Every product
 const fkeys = ['type','shape','metal','style','stone','colour','carat'];
 fkeys.forEach(k => { const vals = [...new Set(PL.map(o => o[k]).filter(Boolean))].sort(); const sel = $('#f-' + k); vals.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); }); });
@@ -710,7 +746,7 @@ function renderAll(){
   const slice = rows.slice((page - 1) * PAGE, page * PAGE);
   $('#allcount').textContent = `${fmt(rows.length)} of ${fmt(PL.length)} products` + (rows.length > PAGE ? `, showing ${(page-1)*PAGE+1} to ${Math.min(page*PAGE, rows.length)}` : '');
   $('#alltable').innerHTML = '<thead><tr>' + allCols.map(([k, l, num]) => `<th class="sort${num?' n':''}" data-k="${k}" ${k===sortKey?`data-dir="${sortDir}"`:''}>${l}</th>`).join('') + '<th>Also appears in (rank)</th></tr></thead><tbody>' +
-    slice.map(o => `<tr><td><div class="pcell">${thumb(o)}<div><a class="name" href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.name)}</a><div class="chips">${chips(o)}</div></div></div></td>
+    slice.map(o => `<tr><td><div class="pcell">${thumb(o)}<div><a class="name" href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.name)}</a><div class="chips">${chips(o)}</div>${vchips(o)}</div></div></td>
       <td>${esc(o.type)}${o.setting ? `<div class="small muted">${esc(o.setting)} setting${o.price ? ' · £' + fmt(Math.round(o.price)) : ''}</div>` : ''}</td><td class="small">${o.listed ? 'Yes' : '<span class="flag">Not on any hub page</span>'}</td><td>${tierPill(o.tier)}</td><td class="small">${o.status === 'Established' ? '<span class="muted">Established</span>' : o.status === 'No data' ? '<span class="muted">No views yet</span>' : `${o.status}, ${o.days_live} days${o.status === 'Ramping' ? `, ${fmt(o.views_raw)} real views` : ''}`}</td><td class="n num">${o.tier === 'No data' ? '' : o.ratio.toFixed(2)}</td><td class="n num">${o.rank || ''}</td>
       <td class="n num">${o.tier === 'No data' ? '' : o.ratio12.toFixed(2)}</td><td>${trendPill(o.trend)}</td>
       <td class="n num">${fmt(o.views)}</td><td class="n num">${fmt(o.users)}</td><td class="n num">${o.views ? o.er.toFixed(1) + '%' : ''}</td><td class="n num">${fmt(o.clicks)}</td><td class="n num">${fmt(o.atc)}</td><td class="n num">${o.purch ? '<span class="flag">' + o.purch + '</span>' : '0'}</td>
