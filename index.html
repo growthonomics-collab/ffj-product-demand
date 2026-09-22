@@ -388,6 +388,9 @@ body.locked > :not(#lock){visibility:hidden}
     <div id="hubchart"></div>
   </figure>
   <div class="hublist" id="hublist"></div>
+  <h3 style="margin:30px 0 10px">Every page in the site menu</h3>
+  <p class="small muted" style="margin-bottom:12px">All 204 pages linked from the site's navigation, with their own page views and organic clicks, and whether the dashboard ranks products on them. Builder and landing pages (Start with a diamond, Bespoke, Gifts) carry traffic but no fixed product list, so they are shown for demand only.</p>
+  <div class="tablewrap"><table id="navtable" style="min-width:900px"></table></div>
 </section>
 
 <section role="tabpanel" id="p-attr" aria-labelledby="tab-attr" hidden>
@@ -504,7 +507,7 @@ body.locked > :not(#lock){visibility:hidden}
 <div class="tt" id="tt"></div>
 
 <script id="data" type="application/json"></script>
-<script id="enc" type="application/octet-stream" data-salt="A9nBGyDdXuVS+Flqy4+OQg==" data-iv="lUCnNKxjM8h028j8" data-iter="200000"></script>
+<script id="enc" type="application/octet-stream" data-salt="+t24Jww0i4SxOYwU5mwArg==" data-iv="5+mGcaJmfw4ImLkT" data-iter="200000"></script>
 <script src="data1.js"></script><script src="data2.js"></script><script src="data3.js"></script>
 <script>
 async function boot(){
@@ -579,7 +582,12 @@ function hbar(el, rows, opts){
 // Hub selector
 const sel = $('#hubsel');
 const groups = [...new Set(D.hubs.map(h => h.group))];
-function fillSel(q){ q = (q || '').toLowerCase(); const keep = sel.value; sel.innerHTML = groups.map(g => { const hs = D.hubs.filter(h => h.group === g && h.kind !== 'configurator' && (!q || h.label.toLowerCase().includes(q))); return hs.length ? `<optgroup label="${esc(g)}">` + hs.map(h => `<option value="${h.id}">${esc(h.label)} (${h.n_products}${h.kind==='unmapped'?', not mappable':h.kind==='empty'?', no matching products':''})</option>`).join('') + '</optgroup>' : ''; }).join(''); if ([...sel.options].some(o => o.value === keep)) sel.value = keep; }
+function fillSel(q){ q = (q || '').toLowerCase(); const keep = sel.value;
+  const navHs = D.hubs.filter(h => h.nav && h.kind !== 'configurator' && (!q || h.label.toLowerCase().includes(q)));
+  const opt = h => `<option value="${h.id}">${h.nav ? '★ ' : ''}${esc(h.label)} (${h.n_products}${h.kind==='unmapped'?', not mappable':h.kind==='empty'?', no matching products':''})</option>`;
+  sel.innerHTML = (navHs.length ? `<optgroup label="Site menu pages (${navHs.length})">` + navHs.map(opt).join('') + '</optgroup>' : '') +
+    groups.map(g => { const hs = D.hubs.filter(h => h.group === g && h.kind !== 'configurator' && (!q || h.label.toLowerCase().includes(q))); return hs.length ? `<optgroup label="${esc(g)}">` + hs.map(opt).join('') + '</optgroup>' : ''; }).join('');
+  if ([...sel.options].some(o => o.value === keep)) sel.value = keep; }
 fillSel('');
 $('#hubq').addEventListener('input', () => { fillSel($('#hubq').value); renderHub(); });
 try { const v = localStorage.getItem('ffj-hub'); if (v && D.hubs.find(h => h.id === v)) sel.value = v; } catch(e) {}
@@ -701,6 +709,11 @@ hbar($('#hubchart'), hp, { aria: 'Category page views by hub family', labelW: 25
   tip: r => `<b>${esc(r.label)}</b>${fmt(r.views)} category page views<br>${fmt(r.clicks)} organic clicks · ${fmt(r.impr)} impressions` });
 $('#hublist').innerHTML = hp.map(h => `<figure><figcaption><h3>${esc(h.label)}</h3><span>top entry pages</span></figcaption><ol>` +
   h.pages.slice(0, 10).map(pg => `<li><code>${esc(pg.path)}</code><span class="num" style="white-space:nowrap">${fmt(pg.views)} views · ${fmt(pg.clicks)} clicks</span></li>`).join('') + '</ol></figure>').join('');
+
+// Site menu pages table
+const navHubs = D.hubs.filter(h => h.nav).sort((a,b) => b.hub_pages.views - a.hub_pages.views);
+$('#navtable').innerHTML = '<thead><tr><th>Page</th><th>Family</th><th>Type</th><th class="n">Products ranked</th><th class="n">Page views</th><th class="n">Organic clicks</th><th class="n">Impressions</th></tr></thead><tbody>' +
+  navHubs.map(h => `<tr><td><a href="https://www.flawlessfinejewelry.com${esc(h.label)}" target="_blank" rel="noopener">${esc(h.label)}</a></td><td>${esc(h.group)}</td><td>${h.kind === 'configurator' ? 'builder / landing page' : h.kind === 'root' ? 'category root' : h.kind === 'empty' ? 'no matching products' : 'category page'}</td><td class="n num">${h.n_products ? fmt(h.n_products) : ''}</td><td class="n num">${fmt(h.hub_pages.views)}</td><td class="n num">${fmt(h.hub_pages.clicks)}</td><td class="n num">${fmt(h.hub_pages.impr)}</td></tr>`).join('') + '</tbody>';
 
 // Attributes panel
 const attrLabels = {shape:'Shape', metal:'Metal', style:'Setting style', stone:'Centre stone', colour:'Diamond colour', carat_band:'Carat band'};
