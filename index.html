@@ -185,7 +185,7 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .trend-Rising{color:#5fd08a}:root:not([data-theme="light"]) .trend-Fading{color:#f08a7a}}
 .tier-Low{background:var(--bg);color:var(--ink-3);border:1px dashed var(--line-strong)}
 .pl{font-size:12px;color:var(--ink-2);line-height:1.5}
-.vch{font-size:11.5px;color:var(--ink-2);margin-top:4px}.vch b{color:var(--ink);font-weight:500}
+.vch{font-size:11.5px;color:var(--ink-2);margin-top:4px}.vch b{color:var(--ink);font-weight:500}.vch em{font-style:normal;color:var(--ink-3)}.vch i{font-style:normal;color:var(--taupe);font-weight:500}.vch details{display:inline}.vch summary{display:inline;cursor:pointer;color:var(--taupe)}.pid{font-size:11px;color:var(--ink-3);margin-top:2px;font-variant-numeric:tabular-nums}
 .pl b{color:var(--ink);font-weight:500}
 .pager{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:14px;font-size:13px}
 .pager button{font:inherit;font-size:12px;padding:6px 11px;border:1px solid var(--line-strong);border-radius:0;background:var(--surface);color:var(--ink);cursor:pointer}
@@ -348,7 +348,7 @@ body.locked > :not(#lock){visibility:hidden}
     </div>
   </div>
   <div class="controls filters" id="filters">
-    <label class="ctl">Search<input id="q" type="search" placeholder="name or URL"></label>
+    <label class="ctl">Search<input id="q" type="search" placeholder="name, URL or product ID"></label>
     <label class="ctl">Hub<select id="f-type"><option value="">All</option></select></label>
     <label class="ctl">Tier<select id="f-tier"><option value="">All</option><option>Hero</option><option>Strong</option><option>Average</option><option>Low</option><option>New</option><option>No data</option></select></label>
     <label class="ctl">On a hub page<select id="f-listed"><option value="">All</option><option value="yes">Listed</option><option value="no">Not listed anywhere</option></select></label>
@@ -507,7 +507,7 @@ body.locked > :not(#lock){visibility:hidden}
 <div class="tt" id="tt"></div>
 
 <script id="data" type="application/json"></script>
-<script id="enc" type="application/octet-stream" data-salt="+t24Jww0i4SxOYwU5mwArg==" data-iv="5+mGcaJmfw4ImLkT" data-iter="200000"></script>
+<script id="enc" type="application/octet-stream" data-salt="nBcJ3kHuq3Qhhb0iuEm8qw==" data-iv="+g4ZXdGe8I/jlBqd" data-iter="200000"></script>
 <script src="data1.js"></script><script src="data2.js"></script><script src="data3.js"></script>
 <script>
 async function boot(){
@@ -524,7 +524,10 @@ PL.forEach(o => { if (o.ratio12 === undefined) { o.ratio12 = 0; o.trend = ''; } 
 const ROOTS = new Set(['pg-engagement-rings','pg-wedding-rings','pg-eternity-rings','pg-earrings','pg-necklaces','pg-bracelets']);
 const trendPill = tr => tr ? `<span class="trend trend-${tr}">${tr === 'Rising' ? '↑ ' : tr === 'Fading' ? '↓ ' : tr === 'New' ? '✦ ' : '→ '}${tr}</span>` : '';
 const tierOf = x => x >= 3 ? 'Hero' : x >= 1.5 ? 'Strong' : x >= 0.5 ? 'Average' : 'Low';
-function vchips(o){ const v = o.variants && o.variants.shape; if (!v || !v.length) return ''; const tot = v.reduce((a,x)=>a+x[1],0) || 1; return '<div class="vch">Shapes: ' + v.slice(0,4).map(x => `<span>${esc(x[0])} <b>${(x[1]/tot*100).toFixed(0)}%</b></span>`).join(' · ') + (v.length > 4 ? ` · +${v.length-4}` : '') + '</div>'; }
+const VKEYS = [['shape','Shape'],['claws','Claws'],['band','Band'],['stone','Centre stone'],['carat','Carat'],['purity','Purity'],['width','Width']];
+// every query-string variation of the product (shape, claws, band, stone, carat, purity, width): share of the product's variation views, and the popularity that variant carries (product ratio × share)
+function vchips(o, ratio){ const v = o.variants; if (!v) return ''; const r = ratio === undefined ? o.ratio : ratio; const lines = VKEYS.filter(([k]) => v[k] && v[k].length).map(([k, l]) => { const xs = v[k]; const tot = xs.reduce((a,x)=>a+x[1],0) || 1; const item = x => `<span>${esc(x[0])} <b>${(x[1]/tot*100).toFixed(0)}%</b>${r ? ` <i>${(r * x[1] / tot).toFixed(2)}</i>` : ''}</span>`; return `<div><em>${l}:</em> ` + xs.slice(0,4).map(item).join(' · ') + (xs.length > 4 ? ` <details class="more"><summary>+${xs.length-4} more</summary>${xs.slice(4).map(item).join(' · ')}</details>` : '') + '</div>'; }); return lines.length ? '<div class="vch">' + lines.join('') + '</div>' : ''; }
+const idTag = o => o.wc_id ? `<div class="pid">ID ${esc(o.wc_id)}</div>` : '';
 function plist(o, skip){ const xs = (o.placements || []).filter(x => x[0] !== skip && !ROOTS.has(x[0])); if (!xs.length) return '<span class="muted">main hub only</span>'; const show = xs.slice(0, 8).map(x => `${esc(HUB[x[0]].label)} <b>${x[1] ? '#' + x[1] : 'no data'}</b> of ${HUB[x[0]].n_products}`).join('<br>'); return show + (xs.length > 8 ? `<details class="more"><summary>+${xs.length - 8} more pages</summary>${xs.slice(8).map(x => `${esc(HUB[x[0]].label)} <b>${x[1] ? '#' + x[1] : 'no data'}</b> of ${HUB[x[0]].n_products}`).join('<br>')}</details>` : ''); }
 const tierPill = t => `<span class="tier tier-${t.replace(' ','-')}">${t}</span>`;
 const TH = D.thumbs || {}; const IMG = D.images || {};
@@ -639,7 +642,7 @@ function renderHub(){
     <div class="cratio">Ratio <b>${r.ratio.toFixed(2)}</b>${r.trend && r.trend !== 'Steady' ? ' · ' + r.trend : ''}</div></a>`; }).join('');
   // Table
   $('#ranktable').innerHTML = `<thead><tr><th>#</th><th>Product</th><th class="n">Demand share</th><th class="n">Ratio</th><th>Tier</th><th class="n">12-mo ratio</th><th>Trend</th><th class="n">Views</th><th class="n">Users</th><th class="n">Eng. rate</th><th class="n">Engaged sessions</th><th class="n">Organic clicks</th><th class="n">Add-to-cart</th><th class="n">Purchased</th></tr></thead><tbody>` +
-    rows.map((r, i) => `<tr><td class="num">${r.nodata ? '' : r.rank}</td><td><div class="pcell">${thumb(r)}<div><a class="name" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a><div class="chips">${chips(r)}</div>${vchips(r)}<div class="pl">${plist(r, h.id)}</div></div></div></td>
+    rows.map((r, i) => `<tr><td class="num">${r.nodata ? '' : r.rank}</td><td><div class="pcell">${thumb(r)}<div><a class="name" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a>${idTag(r)}<div class="chips">${chips(r)}</div>${vchips(r, r.nodata ? 0 : r.ratio)}<div class="pl">${plist(r, h.id)}</div></div></div></td>
       <td class="n num"><span class="sharebar" style="width:${Math.max(2, 60 * r.score / (rows[0].score || 1))}px"></span><span class="share">${pct(r.score)}%</span></td>
       <td class="n num">${r.nodata ? '' : r.ratio.toFixed(2)}</td><td>${tierPill(r.nodata ? 'No data' : r.prov ? 'New' : tierOf(r.ratio))}${r.days_live ? `<div class="small muted">${r.days_live} days live</div>` : ''}</td>
       <td class="n num">${r.nodata ? '' : r.ratio12.toFixed(2)}</td><td>${trendPill(r.trend)}</td>
@@ -750,7 +753,7 @@ const tierOrder = {Hero:0, Strong:1, Average:2, Low:3, New:4, 'No data':5};
 function filtered(){
   const q = $('#q').value.trim().toLowerCase();
   const f = {}; fkeys.forEach(k => f[k] = $('#f-' + k).value); const ft = $('#f-tier').value, ftr = $('#f-trend').value, fst = $('#f-status').value, fl = $('#f-listed').value;
-  let rows = PL.filter(o => (!q || o.name.toLowerCase().includes(q) || o.slug.includes(q)) && (!ft || o.tier === ft) && (!ftr || o.trend === ftr) && (!fst || o.status === fst) && (!fl || (fl === 'yes') === !!o.listed) && fkeys.every(k => !f[k] || o[k] === f[k]));
+  let rows = PL.filter(o => (!q || o.name.toLowerCase().includes(q) || o.slug.includes(q) || (o.wc_id && o.wc_id === q)) && (!ft || o.tier === ft) && (!ftr || o.trend === ftr) && (!fst || o.status === fst) && (!fl || (fl === 'yes') === !!o.listed) && fkeys.every(k => !f[k] || o[k] === f[k]));
   rows.sort((a, b) => { let x = a[sortKey], y = b[sortKey]; if (sortKey === 'tier') { x = tierOrder[x]; y = tierOrder[y]; } if (sortKey === 'trend') { x = trendOrder[x]; y = trendOrder[y]; } if (sortKey === 'listed') { x = x ? 1 : 0; y = y ? 1 : 0; } if (typeof x === 'string') return sortDir === 'asc' ? x.localeCompare(y) : y.localeCompare(x); x = x ?? -1; y = y ?? -1; return sortDir === 'asc' ? x - y : y - x; });
   return rows;
 }
@@ -759,7 +762,7 @@ function renderAll(){
   const slice = rows.slice((page - 1) * PAGE, page * PAGE);
   $('#allcount').textContent = `${fmt(rows.length)} of ${fmt(PL.length)} products` + (rows.length > PAGE ? `, showing ${(page-1)*PAGE+1} to ${Math.min(page*PAGE, rows.length)}` : '');
   $('#alltable').innerHTML = '<thead><tr>' + allCols.map(([k, l, num]) => `<th class="sort${num?' n':''}" data-k="${k}" ${k===sortKey?`data-dir="${sortDir}"`:''}>${l}</th>`).join('') + '<th>Also appears in (rank)</th></tr></thead><tbody>' +
-    slice.map(o => `<tr><td><div class="pcell">${thumb(o)}<div><a class="name" href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.name)}</a><div class="chips">${chips(o)}</div>${vchips(o)}</div></div></td>
+    slice.map(o => `<tr><td><div class="pcell">${thumb(o)}<div><a class="name" href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.name)}</a>${idTag(o)}<div class="chips">${chips(o)}</div>${vchips(o, o.tier === 'No data' ? 0 : o.ratio)}</div></div></td>
       <td>${esc(o.type)}${o.setting ? `<div class="small muted">${esc(o.setting)} setting${o.price ? ' · £' + fmt(Math.round(o.price)) : ''}</div>` : ''}</td><td class="small">${o.listed ? 'Yes' : '<span class="flag">Not on any hub page</span>'}</td><td>${tierPill(o.tier)}</td><td class="small">${o.status === 'Established' ? '<span class="muted">Established</span>' : o.status === 'No data' ? '<span class="muted">No views yet</span>' : `${o.status}, ${o.days_live} days${o.status === 'Ramping' ? `, ${fmt(o.views_raw)} real views` : ''}`}</td><td class="n num">${o.tier === 'No data' ? '' : o.ratio.toFixed(2)}</td><td class="n num">${o.rank || ''}</td>
       <td class="n num">${o.tier === 'No data' ? '' : o.ratio12.toFixed(2)}</td><td>${trendPill(o.trend)}</td>
       <td class="n num">${fmt(o.views)}</td><td class="n num">${fmt(o.users)}</td><td class="n num">${o.views ? o.er.toFixed(1) + '%' : ''}</td><td class="n num">${fmt(o.clicks)}</td><td class="n num">${fmt(o.atc)}</td><td class="n num">${o.purch ? '<span class="flag">' + o.purch + '</span>' : '0'}</td>
@@ -814,4 +817,4 @@ document.getElementById('lockform').addEventListener('submit', async ev => {
     await boot();
   } catch(e) { err.textContent = 'Wrong password, try again.'; }
 });
-</script></body></html>
+</script>
